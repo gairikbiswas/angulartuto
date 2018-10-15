@@ -480,16 +480,405 @@
 
 24) Submitting values to server ::::
 
+	import { EnrolmentService } from './enrolment.service';
+
 	<form #userForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
 
 
 	</form>
 
+	constructor( private _enrolmentService: EnrolmentService ){}
 
 	onSubmit() {
 		console.log(this.userModel);
+		this._enrolmentService.enroll(this.userModel)
+			.subscribe(
+				data => console.log("Success!", data),
+				error => console.log("Error!", error)
+		)
 		
 	}
+
+	So, to send this data to server, we need a service
+
+	enrolment.service.ts ::
+	-----------------------
+	
+	import { User } from './user';
+
+	_url = "";
+
+	constructor(private _http: HttpClient){}
+
+	enroll(user: User) {
+
+		return this._http.post<any>(this._url, user);
+	}
+
+
+	So, the post request give response as observable. So we need to subscribe observable to component.
+
+
+25) Handling error from server after form submit ::::
+
+	enrolment.service.ts ::
+	-----------------------
+
+	import { catchError } from 'rxjs/operators';
+	import { throwError } from 'rxjs';
+
+
+	enroll(user: User) {
+		return this._http.post<any>(this._url, user)
+			.pipe(catchError(this.errorHandler))
+	}
+	
+	errorHandler(error: HttpErrorResponse) {
+		return throwError(error);
+	}
+
+	in component.ts ::
+	------------------
+
+	onSubmit() {
+		this.submitted = true;
+		this._enrolmentService.enroll(this.userModel)
+			.subscribe(
+				data => console.log("Success!", data),
+				error => this.errorMsg = error.statusText
+		)
+
+	}
+
+	in HTML part ::
+	---------------
+
+	<div class="" *ngIf="errorMsg">
+		{{errorMsg}}
+	</div>
+
+
+26) TDF and Reactive form(Model driven form) ::::
+
+	<form #userForm="ngForm" *ngIf="!submitted" (ngSubmit)="onSubmit()" novalidate>
+		
+		
+	</form> 
+
+	* ngForm directive gives us entire information about this enrolment form. now lets pass parameter "userForm" in onSubmit() function.
+
+	<form #userForm="ngForm" *ngIf="!submitted" (ngSubmit)="onSubmit(userForm)" novalidate>
+		
+		
+	</form>
+
+	onSubmit(userForm) {
+		console.log(userForm);
+	}
+
+	* on console, you see the "NgForm" object is logged. Expand this, you can see lot of properties( Like value, form .....). Form propert has type "FormGroup". Expand this form, you can see control properties. And expand control properties, you see lot of field of type "FormControl". FormControl has properties like validator, pristine, touched and so on.
+	
+
+	The FormGroup and FormControl are the building blocks of reactive forms.
+
+
+27) Reactive Form or model driven form ::::
+
+	* No way two way binding.
+	* Easy to create dynamic field.
+	* Easy to unit testing.	
+
+
+
+28) Adding form HTML ::::
+
+	<div class="container-fluid">
+		<h2>Registration Form</h2>
+		<form>
+			<div>
+				<label>Username</label>
+				<input type="text" class="form-control">
+			</div>
+			<div>
+				<label>Password</label>
+				<input type="password" class="form-control">
+			</div>
+			<div>
+				<label>Confirm Password</label>
+				<input type="password" class="form-control">
+			</div>
+
+			<button class="btn btn-primary" type="submit">Register</button>
+		</form>
+	</div>
+
+	* Note that there are no difference between the view form for TDF and Reactive
+
+
+29)  Creating the form Model ::::
+
+	To start with Reactive form, need to import "ReactiveFormsModule" inside app.module.ts and also add into imports array.
+
+	app.module.ts ::
+	----------------
+
+	import { ReactiveFormsModule } from "@angular/forms";
+	
+	
+	* Define form model in component class/ component.ts
+	* Import formGroup and formControl inside app component. 
+
+	import { FormGroup, FormControl } from '@angular/forms';
+
+	export class AppComponent {
+		registrationForm = new FormGroup({
+			userName: new FormControl(''), // pass default value like new FormControl('Gairik'),
+			password: new FormControl(''),
+			confirmPassword: new FormControl('')
+		});
+		
+	}		
+
+
+
+	app.component.html ::
+	---------------------
+
+
+	<div class="container-fluid">
+		<h2>Registration Form</h2>
+		<form [formGroup]="registrationForm">
+			<div class="form-group">
+				<label>Username</label>
+				<input formControlName="username" type="text" class="form-control">
+			</div>
+			<div class="form-group">
+				<label>Password</label>
+				<input formControlName="password" type="password" class="form-control">
+			</div>
+			<div class="form-group">
+				<label>Confirm Password</label>
+				<input formControlName="confirmPassword" type="password" class="form-control">
+			</div>
+
+			<button class="btn btn-primary" type="submit">Register</button>
+		</form>
+		{{registrationForm.value | json}}
+	</div>
+
+
+30) Nesting Form Groups ::::
+
+	Making a form group of address field.
+
+
+	app.component.html ::
+	---------------------
+
+
+	<div class="container-fluid">
+		<h2>Registration Form</h2>
+		<form [formGroup]="registrationForm">
+			<div class="form-group">
+				<label>Username</label>
+				<input formControlName="username" type="text" class="form-control">
+			</div>
+			<div class="form-group">
+				<label>Password</label>
+				<input formControlName="password" type="password" class="form-control">
+			</div>
+			<div class="form-group">
+				<label>Confirm Password</label>
+				<input formControlName="confirmPassword" type="password" class="form-control">
+			</div>
+
+			<div formGroupName="address">
+				<div class="form-group">
+					<label>City</label>
+					<input formControlName="city" type="password" class="form-control">
+				</div>
+
+				<div class="form-group">
+					<label>State</label>
+					<input formControlName="state" type="password" class="form-control">
+				</div>
+
+				<div class="form-group">
+					<label>Postal Code</label>
+					<input formControlName="postalCode" type="password" class="form-control">
+				</div>
+			</div>
+
+			<button class="btn btn-primary" type="submit">Register</button>
+		</form>
+		{{registrationForm.value | json}}
+	</div>
+
+
+
+
+	app.module.ts ::
+	----------------
+
+	import { ReactiveFormsModule } from "@angular/forms"; 
+
+	import { FormGroup, FormControl } from '@angular/forms';
+
+	export class AppComponent {
+		registrationForm = new FormGroup({
+			userName: new FormControl('Gairik'),
+			password: new FormControl(''),
+			confirmPassword: new FormControl(''),
+			address: new FormGroup({
+				city: new FormControl(''),
+				state: new FormControl(''),
+				postalCode: new FormControl(''),
+			})
+		});
+		
+	}
+
+
+
+31) Managing control values ::::
+
+	We already have set default value by using new FormControl('Gairik'). But now we are using setValue and patchValue method for set the form values.
+
+	setValue method is used to set value of all fields of a form and this is very strict for all fields are necessary.
+	
+	patchValue method is used to set value of few fields of a form. Like ex. ::
+
+	app.component.html ::
+	---------------------
+
+
+	<div class="container-fluid">
+		<h2>Registration Form</h2>
+		<form [formGroup]="registrationForm">
+			<div class="form-group">
+				<label>Username</label>
+				<input formControlName="userName" type="text" class="form-control">
+			</div>
+			<div class="form-group">
+				<label>Password</label>
+				<input formControlName="password" type="password" class="form-control">
+			</div>
+			<div class="form-group">
+				<label>Confirm Password</label>
+				<input formControlName="confirmPassword" type="password" class="form-control">
+			</div>
+
+			<div formGroupName="address">
+				<div class="form-group">
+					<label>City</label>
+					<input formControlName="city" type="password" class="form-control">
+				</div>
+
+				<div class="form-group">
+					<label>State</label>
+					<input formControlName="state" type="password" class="form-control">
+				</div>
+
+				<div class="form-group">
+					<label>Postal Code</label>
+					<input formControlName="postalCode" type="password" class="form-control">
+				</div>
+			</div>
+
+			<button class="btn btn-primary" type="submit">Register</button>
+			<button class="btn btn-secondary" type="button" (click)="loadAPI()">Load API</button>
+		</form>
+		{{registrationForm.value | json}}
+	</div>
+	
+
+	app.component.ts ::
+	-------------------
+
+	registrationForm = new FormGroup({
+			userName: new FormControl(''),
+			password: new FormControl(''),
+			confirmPassword: new FormControl(''),
+			address: new FormGroup({
+				city: new FormControl(''),
+				state: new FormControl(''),
+				postalCode: new FormControl(''),
+			})
+		});
+
+	loadAPI() {
+
+		// For all fields update use setValue
+
+		this.registrationForm.setValue({
+			userName: 'Gairik'
+			password: '12345',
+			confirmPassword: '12345',
+			address: {
+				city: 'City',
+				state: 'WB',
+				psalCode: '123456'
+			}
+		});
+
+		// For few fields update use patchValue
+
+		this.registrationForm.patchValue({
+			userName: 'Gairik'
+			password: '12345',
+			confirmPassword: '12345'
+		});
+	}
+
+
+
+32) FormBuilder Service ::::
+
+	
+	app.component.ts ::
+	-------------------
+
+	import { formBuilder } from '@angular/forms';
+
+	constructor (private fb: FormBuilder) {}
+
+	registrationForm = this.fb.group({
+		userName: ['Gairik'],
+		password: [''],
+		confirmPassword: [''],
+		address: this.fb.group({
+			city: [''],
+			state: [''],
+			postalCode: ['']
+		})
+	})
+
+
+	* We are using formBuilder Group instead of FormGroup and FormControl
+
+
+33) Simple validation of Reactive form ::::
+
+	app.component.ts ::
+	-------------------
+
+	import { formBuilder, Validators } from '@angular/forms';
+
+	constructor (private fb: FormBuilder) {}
+
+	registrationForm = this.fb.group({
+		userName: ['Gairik', Validators.required],  -----------> First field of the array is value of the field and second field is for validation rules 
+		password: [''],
+		confirmPassword: [''],
+		address: this.fb.group({
+			city: [''],
+			state: [''],
+			postalCode: ['']
+		})
+	})
+
+	
+
 
 
 
