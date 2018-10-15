@@ -1,0 +1,514 @@
+1. Each module has a root module and it names as app module. In angular each thing is module.
+ 
+2. Component is actually controls the view things
+
+3. Interpolation - {{name}}
+
+4. Attribute - HTML, attribute value can not change once they initialize
+  Properties - DOM, property values can change
+  <input [id] = "" name="id" />
+  [id] or bind-id
+
+5. class binding
+  
+   public hasError = true;
+   <h2 [class]="successClass"></h2>
+   <h2 [class.text-danger]="hasError"></h2>
+
+   That is easy for single class. But if there are multiple class property,angular has property named - ngClass
+   
+   public hasError = false;
+   public isSpecial = true;
+   public messageClasses = {
+	"text-success": !this.hasError,
+	"text-danger": this.hasError,
+	"text-special": this.isSpecial
+   }
+
+
+   <h2 [ngClass]="messageClasses"></h2>
+
+6. Event binding
+
+   public greeting = "";
+  
+   onclick() {
+
+	console.log("Hello there");
+   }
+
+   <button (click)="onClick()"></button>
+   {{greeting}}
+
+   to get event from function ----
+
+   <button (click)="onClick($event)"></button>
+   <button (click)="greeting='Welcome Vishwas'"></button>
+
+7. Template reference veriables ::::
+
+   <input #myId type="text" >
+   <button (click)="Logmessage(myId.value)">Log Msg</button>
+
+   Logmessage(value) {
+	console.log(value);
+   }
+
+8. Two way binding ::::
+
+   <input [(ngModel)]="name" type="text">
+   {{name}}
+   
+9. Structural directives :::: 
+
+   ngIf
+   ngSwitch
+   ngFor
+
+   i) ngIf ::::
+	<h2 *ngIf="true">Test</h2>
+        <h2 *ngIf="displayName">Test</h2>
+
+	
+	if-else :::
+
+        <h2 *ngIf="displayName; else elseBlock">name here</h2>
+       
+        <ng-template #elseBlock>
+	  <h2>Name is hidden</h2>
+        </ng-template>
+
+
+
+        if-else another way ::::
+	
+	<div *ngIf="displayName; then thenBlock; else elseBlock"></div>
+
+	<ng-template #thenBlock>
+	  <h2>Name is not hidden</h2>
+        </ng-template>
+
+	<ng-template #elseBlock>
+	  <h2>Name is hidden</h2>
+        </ng-template>
+
+
+      displayName = false;
+
+   ii) ngSwitch ::::
+
+	public color = "red";
+	
+	<div [ngSwitch]="color">
+	  <div *ngSwitchCase="'red'">You have choose red color</div>
+	  <div *ngSwitchCase="'green'">You have choose green color</div>
+	  <div *ngSwitchCase="'blue'">You have choose blue color</div>
+	  <div *ngSwitchDefault>Default case</div>
+	</div>
+
+    iii) ngFor ::::
+
+	public colors = ["red", "blue", "green", "yellow"];
+
+	<div *ngFor="let color of colors; index as i">
+	  <h2>{{i}} {{color}}</h2>
+	</div>
+
+
+	-- ngFor with conditions --
+        let color of colors; first as f
+	{{f}}
+
+	let color of colors; last as l
+	{{l}}
+
+	let color of colors; odd as o
+	{{o}}
+
+	let color of colors; even as e
+	{{e}}
+
+
+10) Component interaction ::::
+
+	Data flow from parent to child
+        Parent Component --------> Child Component 
+        @Input() Decorator
+
+
+	Data flow from child to parent
+	Child Component ---------> Parent Component
+	@Output() Decorator
+
+
+        Parent Component ----------> Child Component
+        
+	ParentComponent :: 
+        public name = "Biswas";
+	
+	<app-ChildComponent [parentName]="name"></app-ChildComponent>
+
+	Child Component ::
+	@Input public parentName;
+
+	or
+
+	@Input('parentName') public name
+	----> Here name is alias of parentName
+
+
+
+	Child Component ------------> Parent Component
+
+	Child Component :: 
+	@output() public childEvent = new EventEmitter();
+	
+	fireEvent() {
+	  this.childEvent.emit('Hey!!');
+	}
+	<button (click)="fireEvent()"></button>
+
+
+	Parent Component ::
+	public message;
+	<app-childComponent (childEvent)="message=$event"></app-childComponent>
+
+	{{message}}
+
+
+11) Pipes ::::::
+
+	public person = {
+	  "firstname": "Gairik"
+	  "lastname": "Biswas"
+	}
+
+	{{name | lowercase}}
+
+	uppercase
+	titlecase
+	slice:3 ( starts string from string 3 )
+	slide:3:5 (3rd and forth letter) -> limit 5
+	{{ person | json }}
+
+
+	<h2>{{5.678 | number:'1.2-3'}}</h2> => 5.678
+	<h2>{{5.678 | number:'3.4-5'}}</h2> => 005.6780
+	<h2>{{5.678 | number:'3.1-2'}}</h2> => 005.68
+
+	<h2>{{0.25 | percent }}</h2> => 25%;
+
+	{{0.25 | corrency }} => $0.25
+	{{0.25 | currency:'GBP' }}
+
+
+	{{0.25 | currency:'GBP': 'code'}} => EUR0.25
+
+
+	public date = new Date();
+
+	{{date}}
+	{{date | date:'short'}}
+	{{date | date:'shortDate'}}
+	{{date | date:'shortTime'}}
+
+	medium, mediumDate, mediumTime
+	long, longDate, longTime
+
+
+
+12) Services ::::
+
+	public employees = [
+	  {"id": 1, "name": "Andrew", "age":30},
+	  {"id": 2, "name": "Mike", "age":20},
+	  {"id": 3, "name": "Arnold", "age":42},
+	]; 
+
+
+	<div *ngFor="let employee of employees">
+	  <h2>{{employee.name}}</h2>
+	</div>
+
+13) Dependency Injection ::::
+
+
+
+
+14) HTTP and Observables ::::
+
+    app-module.ts ::
+	import { HttpClientModule } from '@angular/common/http';
+	import {IEmployee} from './employee';
+	import {Observable} from 'rxjs/Observable';
+
+	add HttpClientModule inside @NgModule imports array
+
+    data.service.ts ::
+	import { HttpClient } from '@angular/common/http';
+	private _url: string = "/assets/data/employees.json";
+	constructor(private http: HttpClient) { }
+
+	getEmployees(): Observable<IEmployee[]> {
+	  return this.http.get<IEmployee[]>(this._url);
+	}
+
+    employee.ts ::
+       
+        export interface IEmployee {
+	   id:number,
+	   name:string,
+	   age: number
+	}
+
+    employee list :: 
+
+	ngOnInit() {
+	   this._employeeservice.getEmployees().subscribe(data => this.employees = data);
+	}
+
+
+15) HTTP Error Handling ::::
+
+    data.service.ts ::
+
+    import 'rxjs/add/operator/catch';
+    import 'rxjs/add/observable/throw';
+
+    getEmployees():Observable<IEmployee[]>{
+	return this.http.get<IEmployee[]>(this._url)
+		.catch(this.errorHandler);
+    }
+
+    errorHandler(error: HttpErrorResponse) {
+	return Observable.throw(error.message || "Server error");
+    }
+
+
+    employeelist.component.ts ::
+
+    ngOnInit() {
+	this._employeeService.getEmployees()
+		.subscribe(data => this.employees = data,
+			error => this.errorMsg = error);
+    }
+
+
+    {{errorMsg}}
+
+16) Routing
+
+
+
+
+17) Template Driven Forms ::::
+
+    Simple bootstrap form
+
+    app.module.ts ::
+
+	import { FormsModule } from '@angular/forms';
+	add FormsModule inside imports array;
+
+
+	<form #userForm="ngForm"> #userForm ---> template reference veriable
+		{{ userForm.value | json }}
+		<input type="text" class="form-control" name="username" ngModel>
+
+		ngModelGroup directive ::
+
+		<div ngModelGroup="address">
+			<div class="form-group">
+				<label>Street:</label>
+				<input type="text" class="form-control" name="street" ngModel>
+			</div>
+
+			<div class="form-group">
+				<label>City:</label>
+				<input type="text" class="form-control" name="city" ngModel>
+			</div>
+		</div>
+	</form>
+
+
+
+18) Binding data to a model ::::
+
+	ng create class user;
+
+	user.ts ::
+	
+	export class User {
+	  constructor(
+		public name: string,
+		public email: string,
+		public phone: number,
+		public topic: string,
+		public timePreference: string,
+		public subscribe: boolean
+	  ){}
+	}
+
+	app.component.ts ::
+
+	import { User } from './user';
+	
+	userModel = new User('Rob', 'rob@test.com', 1234567890, '', 'morning', true);
+
+	<form>
+		<input type="text" name="name" class="form-control" [(ngModel)]="userModel.name">
+	</form>
+
+
+	[ngModel] -> one way binding. From class to view.
+	[(ngModel)] -> two way binding. From class to view and again view to class
+
+	
+
+19) Form control and form validation ::::
+
+	State					Class if true		Class if false
+	--------------------------------------------------------------------------------
+	The control has been visited             ng-touched               ng-untouched
+	The control's value has changed          ng-dirty                 ng-pristine
+	The control's value is valid             ng-valid                 ng-invalid
+
+
+	<input type="text" name="name" required #name class="form-control"  [(ngModel)]="userModel.name" >
+
+	{{name.className}}  --> form-control ng-untouched ng-pristine ng-valid
+
+	#name="ngModel" -> reference to ngModel, to access different properties
+
+	<input type="text" name="name" required #name="ngModel" class="form-control"  [(ngModel)]="userModel.name" >
+
+	{{name.untouched}}
+
+
+
+20) Form validity and visual indicate form validity ::::
+
+	<input type="text" required #name="ngModel"
+		[class.is-invalid]="name.invalid && name.touched" class="form-control"
+		name="name" [(ngModel)]="userModel.name" />	
+
+
+	<input type="tel" #phone="ngModel" pattern="^\d{10}$" [class.is-invalid]="phone.invalid && phone.touched" class="form-control" name="phone" /> 
+
+
+21) Form validity and display approprite error message ::::
+
+	<input type="text" required #name="ngModel"
+		[class.is-invalid]="name.invalid && name.touched" class="form-control"
+		name="name" [(ngModel)]="userModel.name" />	
+
+	<small class="text-danger" [class.d-none]="name.valid || name.untouched">Name is required</small>
+
+
+
+
+	If there are multiple error messages ::::::
+
+	<input type="tel" #phone="ngModel" required pattern="^\d{10}$" [class.is-invalid]="phone.invalid && phone.touched" class="form-control" name="phone" /> 
+
+	<div *ngIf="phone.errors && (phone.invalid || phone.touched)">
+		<small class="text-danger" *ngIf="phone.errors.required">Phone number is required</small>
+		<small class="text-danger" *ngIf="phone.errors.pattern">Phone number must be 10 digits</small>
+	</div>
+
+
+
+22) Form validation in select options ::::
+
+	<select name="topic" #topic="ngModel" [class.is-invalid]="topic.invalid && topic.touched" class="form-control" [(ngModel)]="userModel.topic">
+		<option value="">I am interrested in</option>
+		<option *ngFor="let topic of topics">{{topic}}</option>
+	</select>
+
+	<small class="text-danger" [class.d-none]="topic.valid || topic.untouched">Please choose a topic</small>
+
+
+
+	if the default value is not blank, then the validation will not work properly
+	--------------------
+
+	like - <option value="default">I am interrested in</option>
+
+	for this we are using custom validation, - 
+
+	
+
+	<select (blur)="validateForm(topic.value)" (change)="validateForm(topic.value)" name="topic" #topic="ngModel" [class.is-invalid]="topicHasError && topic.touched" class="form-control" [(ngModel)]="userModel.topic">
+		<option value="default">I am interrested in</option>
+		<option *ngFor="let topic of topics">{{topic}}</option>
+	</select>
+
+	<small class="text-danger" [class.d-none]="!topicHasError || topic.untouched">Please choose a topic</small>
+
+
+	topicHasError = true;
+
+	validateForm(value) {
+		if(value == 'default') {
+			this.topicHasError = true;
+		else
+			this.topicHasError = false;
+	} 
+
+
+
+23) Form validation ::::
+
+	<form #userForm="ngForm">
+
+		{{ userForm.form.valid }}
+
+		<input type="text" required #name="ngModel"
+		[class.is-invalid]="name.invalid && name.touched" class="form-control"
+		name="name" [(ngModel)]="userModel.name" />	
+
+		<small class="text-danger" [class.d-none]="name.valid || name.untouched">Name is required</small>
+
+		<button [disabled]="userForm.form.invalid || topicHasError" class="btn btn-primary" type="submit">Submit</button>
+		
+	</form>
+
+	ngForm ----> it checks over all validity of form fields
+
+
+
+
+24) Submitting values to server ::::
+
+	<form #userForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
+
+
+	</form>
+
+
+	onSubmit() {
+		console.log(this.userModel);
+		
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+crud
+pagination
+search bar
+table sorting (asc/ desc field wise)
